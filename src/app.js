@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
@@ -22,17 +21,15 @@ app.use((err, req, res, next) =>
   res.status(err.status || 500).json({ message: err.message })
 );
 
-mongoose
-  .connect(config.mongoUri) 
-  .then(() => {
-    console.log("MongoDB connected");
-    app.listen(config.port, () => {
-      console.log(`Server running on http://localhost:${config.port}`);
-    });
-  })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err.message);
-    process.exit(1);
-  });
+// Connect Database
+if (config.db.type === "mongo") {
+  await connectMongo(config.db.mongoUri);
+} else {
+  await connectPostgres(config.db.postgres);
+}
+
+app.listen(config.port, () => {
+  console.log(`Server running on http://localhost:${config.port}`);
+});
 
 export default app;
