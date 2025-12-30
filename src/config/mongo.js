@@ -1,14 +1,9 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import config from "./index.js";
-dotenv.config();
 
-const connectDB = async () => {
+const connectMongo = async (mongoUri = config.db.mongoUri) => {
   try {
-    await mongoose.connect(config.db.mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoUri);
     console.log('MongoDB connected');
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);
@@ -16,4 +11,4 @@ const connectDB = async () => {
   }
 };
 
-export default connectDB;
+export default connectMongo;
