@@ -68,21 +68,40 @@ export const refreshToken = async (token, ip) => {
   if (!existing || existing.revoked || existing.expires < new Date())
     throw Object.assign(new Error("Invalid refresh token"), { status: 401 });
 
+  const tokenUser = existing.user
+    ? existing.user
+    : { id: existing.user_id, role: existing.role };
+
   const newRefresh = randomToken();
   await repo.revokeRefreshToken(existing, {
+    revoked: true,
     revokedByIp: ip,
     replacedByToken: hashToken(newRefresh),
   });
 
   await repo.createRefreshToken({
-    userId: existing.user_id || existing.user.id,
+    userId: tokenUser.id,
     tokenHash: hashToken(newRefresh),
     expires: dayjs().add(config.jwt.refreshDays, "day").toDate(),
     createdByIp: ip,
   });
 
   return {
-    accessToken: accessToken(existing),
+    accessToken: accessToken(tokenUser),
     refreshToken: newRefresh,
   };
+};
+
+export const revokeToken = async (token, ip) => {
+  const hash = hashToken(token);
+  const existing = await repo.findRefreshToken(hash);
+
+  if (!existing || existing.revoked || existing.expires < new Date())
+    throw Object.assign(new Error("Invalid refresh token"), { status: 401 });
+
+  await repo.revokeRefreshToken(existing, {
+    revoked: true,
+    revokedByIp: ip,
+    replacedByToken: null,
+  });
 };

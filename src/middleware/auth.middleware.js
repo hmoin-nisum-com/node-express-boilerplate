@@ -9,7 +9,7 @@ export const authorize =
     if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
     const token = authHeader.split(" ")[1];
     if (!token) return res.status(401).json({ message: "Unauthorized" });
-    jwt.verify(token, config.jwtSecret, (err, decoded) => {
+    jwt.verify(token, config.jwt.secret, (err, decoded) => {
       if (err) return res.status(403).json({ message: "Forbidden" });
       if (roles.length && !roles.includes(decoded.role))
         return res.status(403).json({ message: "Forbidden" });

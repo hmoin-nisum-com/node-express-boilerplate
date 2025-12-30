@@ -7,8 +7,15 @@ export const findUserByEmail = (email) =>
 export const createUser = (data) =>
   User.create(data);
 
-export const createRefreshToken = (data) =>
-  RefreshToken.create(data);
+export const createRefreshToken = (data) => {
+  // Service layer uses `userId` for DB-agnostic repos; Mongo schema expects `user`.
+  const normalized = { ...data };
+  if (normalized.userId && !normalized.user) {
+    normalized.user = normalized.userId;
+    delete normalized.userId;
+  }
+  return RefreshToken.create(normalized);
+};
 
 export const findRefreshToken = (tokenHash) =>
   RefreshToken.findOne({ tokenHash }).populate("user");
